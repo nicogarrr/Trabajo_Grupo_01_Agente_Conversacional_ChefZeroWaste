@@ -11,6 +11,8 @@ Proyecto adaptado al esquema de la practica `CA1_ConversationalAgent`.
 - `BowChatChefZeroWaste_E2_STM.py`: memoria a corto plazo para operadores con parametros.
 - `BowChatChefZeroWaste_E3_EmbeddingsImagen.py`: embedding de imagen colocado antes de la BoW.
 - `ImageActionEmbedder.py`: calcula el embedding simple de la imagen.
+- `crear_embedding_gesto.py`: genera un `.emb.vec` medio desde varias fotos del gesto.
+- `gestos/*.emb.vec`: embeddings de gesto para probar entrada visual ya calculada.
 - `main_chef_zero_waste.py`: punto de entrada.
 
 ## Operadores
@@ -72,6 +74,11 @@ ajusta a 4 raciones
 que tengo que comprar
 como conservo el tomate
 como lo conservo
+gestos/planificar_menu.emb.vec
+3 dias gestos/planificar_menu.emb.vec
+5 dias gestos/calcular_caducidad.emb.vec
+gestos/gesto_grupo.emb.vec
+caducidad queso 5 dias gestos/gesto_grupo.emb.vec
 receta imagenes_acciones/recomendar_receta.png
 queso sin lactosa imagenes_acciones/sustituir_ingrediente.png
 4 raciones imagenes_acciones/ajustar_raciones.png
@@ -111,7 +118,29 @@ Categoria detectada: recomendar_receta
 El vector completo siempre se construye asi:
 
 ```text
-[embedding_imagen] + [descripcion_BoW]
+[embedding_gesto] + [embedding_imagen] + [descripcion_BoW]
 ```
 
-Las imagenes ayudan a detectar la accion, no los parametros. Los parametros salen del texto de la frase y de la memoria a corto plazo.
+Las imagenes y los embeddings de gesto ayudan a detectar la accion, no los parametros. Los parametros salen del texto de la frase y de la memoria a corto plazo.
+
+## Ejercicio Imagen
+
+Para la rama `imagen`, el agente acepta tambien un embedding ya calculado de gesto con extension `.emb.vec`, `.embedding.vec` o `.gesto.vec`.
+
+El fichero `gestos/gesto_grupo.emb.vec` se ha creado a partir de las fotos guardadas en `imagenes_acciones/gesto`:
+
+```powershell
+python crear_embedding_gesto.py imagenes_acciones/gesto gestos/gesto_grupo.emb.vec
+```
+
+Ejemplos:
+
+```text
+gestos/planificar_menu.emb.vec
+3 dias gestos/planificar_menu.emb.vec
+5 dias gestos/calcular_caducidad.emb.vec
+gestos/gesto_grupo.emb.vec
+caducidad queso 5 dias gestos/gesto_grupo.emb.vec
+```
+
+El gesto se concatena antes del embedding de imagen que ya existia. El embedding real `gestos/gesto_grupo.emb.vec` activa las dos operaciones nuevas `planificar_menu` y `calcular_caducidad`; si el texto esta vacio, el entrenamiento lo clasifica como `planificar_menu`, y si el texto menciona caducidad lo lleva a `calcular_caducidad`.

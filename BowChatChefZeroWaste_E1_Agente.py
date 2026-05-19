@@ -219,7 +219,7 @@ class BowChatChefZeroWaste_E1_Agente(BowChatChefZeroWaste):
         print("- planificar_menu(dias): planifica menu para 3 dias.")
         # DEFENSA: Ejemplo de uso mostrado en las instrucciones del agente.
         print("- conservar_ingrediente(ingrediente): como conservo el tomate.")
-        print("- imagen: anade una ruta .png/.jpg/.webp; el vector final es [embedding_imagen + BoW].")
+        print("- imagen/gesto: anade una ruta .png/.jpg/.webp o .emb.vec; el vector final es [embedding_gesto + embedding_imagen + BoW].")
         print("- salir: termina la conversacion.\n")
         return {"operacion": "instrucciones", "resultado": "instrucciones impresas"}
 

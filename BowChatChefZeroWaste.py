@@ -103,7 +103,7 @@ class BowChatChefZeroWaste(BoWChat):
             return " {} ".format(key)
 
         text = re.sub(
-            r"[^\s]+\.(?:jpg|jpeg|png|bmp|webp)",
+            r"[^\s]+\.(?:jpg|jpeg|png|bmp|webp|emb\.vec|embedding\.vec|gesto\.vec)|\b(?:emb|embedding|gesto)\.vec\b",
             keep_image_path,
             text,
             flags=re.IGNORECASE,
@@ -129,6 +129,7 @@ class BowChatChefZeroWaste(BoWChat):
             or re.fullmatch(r"\d+", token) is not None
             or re.fullmatch(r"\d+(min|minutos|raciones|personas)", token) is not None
             or re.search(r"\.(jpg|jpeg|png|bmp|webp)$", token) is not None
+            or re.search(r"(^|\.)(emb\.vec|embedding\.vec|gesto\.vec)$", token) is not None
         )
 
     def _clean_token(self, token):

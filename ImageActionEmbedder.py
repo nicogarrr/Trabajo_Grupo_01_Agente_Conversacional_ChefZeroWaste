@@ -20,6 +20,8 @@ class ImageActionEmbedder:
         "sustituir_ingrediente": "sustituir_ingrediente.png",
         "ajustar_raciones": "ajustar_raciones.png",
         "lista_compra": "lista_compra.png",
+        "planificar_menu": "planificar_menu.png",
+        "calcular_caducidad": "calcular_caducidad.png",
         # DEFENSA: Entrada visual preparada para la nueva accion.
         "conservar_ingrediente": "conservar_ingrediente.png",
     }
