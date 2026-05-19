@@ -140,6 +140,9 @@ class BowChatChefZeroWaste_E1_Agente(BowChatChefZeroWaste):
             return self._agent_sustituir_ingrediente(data)
         if operation == "ajustar_raciones":
             return self._agent_ajustar_raciones(data)
+        #DEFENSA: Se incorpora la nueva operacion al flujo del agente.
+        if operation == "calcular_caducidad":
+            return self._agent_calcular_caducidad(data)
         if operation == "lista_compra":
             return self._agent_lista_compra()
         if operation == "planificar_menu":
@@ -155,6 +158,8 @@ class BowChatChefZeroWaste_E1_Agente(BowChatChefZeroWaste):
         print("- recomendar_receta(ingrediente, tiempo, raciones): receta con tomate en 15 minutos para 2 raciones.")
         print("- sustituir_ingrediente(ingrediente, restriccion): sustituye queso sin lactosa.")
         print("- ajustar_raciones(raciones): ajusta a 4 raciones.")
+        #DEFENSA: Se documenta el nuevo operador para el usuario.
+        print("- calcular_caducidad(ingrediente, dias): queso 5 dias.")
         print("- lista_compra(): que tengo que comprar.")
         print("- planificar_menu(dias): planifica menu para 3 dias.")
         print("- imagen: anade una ruta .png/.jpg/.webp; el vector final es [embedding_imagen + BoW].")
@@ -247,6 +252,34 @@ class BowChatChefZeroWaste_E1_Agente(BowChatChefZeroWaste):
         self._print_stm_notes(data)
         return {"operacion": "ajustar_raciones", "receta": adjusted}
 
+    #DEFENSA: Implementa la regla de caducidad segun dias y guarda STM.
+    def _agent_calcular_caducidad(self, data):
+        ingredient = data.get("ingrediente")
+        days = data.get("dias")
+        if ingredient is None:
+            print("Necesito saber que ingrediente quieres comprobar.")
+            return {"operacion": "calcular_caducidad", "resultado": None}
+        if days is None:
+            print("Necesito los dias que lleva guardado el ingrediente.")
+            return {"operacion": "calcular_caducidad", "resultado": None}
+
+        if days <= 2:
+            status = "aun puede conservarse"
+        elif days <= 5:
+            status = "usalo pronto"
+        else:
+            status = "mejor revisalo antes de usarlo"
+
+        self._memorize(data)
+        print("{}: {} ({} dias).".format(ingredient, status, days))
+        self._print_stm_notes(data)
+        return {
+            "operacion": "calcular_caducidad",
+            "ingrediente": ingredient,
+            "dias": days,
+            "resultado": status,
+        }
+
     def _agent_lista_compra(self):
         recipe = self._stm_value("STMreceta", None)
         if recipe is None:
@@ -315,6 +348,8 @@ class BowChatChefZeroWaste_E1_Agente(BowChatChefZeroWaste):
             "raciones": self._extract_servings(raw),
             # Parametro propio de planificar_menu(dias).
             "dias_menu": self._extract_menu_days(raw),
+            # Parametro propio de calcular_caducidad(ingrediente, dias).
+            "dias": self._extract_days(raw),
             "ruta_imagen": self._extract_image_path(self._last_raw_sentence),
             "stm_usada": [],
         }
@@ -395,6 +430,13 @@ class BowChatChefZeroWaste_E1_Agente(BowChatChefZeroWaste):
                 return int(match.group(1))
         return None
 
+    def _extract_days(self, raw):
+        # Detecta patrones del tipo "X dias" para caducidad.
+        match = re.search(r"(\d+)\s*(dia|dias)", raw)
+        if match:
+            return int(match.group(1))
+        return None
+
     def _extract_image_path(self, sentence):
         patterns = [
             r'"([^"]+\.(?:jpg|jpeg|png|bmp|webp))"',
@@ -431,6 +473,9 @@ class BowChatChefZeroWaste_E1_Agente(BowChatChefZeroWaste):
         if len(ingredients) > 0:
             self.STMingredientes = self._unique(self.STMingredientes + ingredients)
             self.STMingredientePrincipal = data.get("ingrediente_principal") or ingredients[0]
+        #DEFENSA: Se guardan restricciones en la STM para su uso posterior.
+        if data.get("ingrediente") is not None:
+            self.STMingredientePrincipal = data["ingrediente"]
         if data.get("tiempo") is not None:
             self.STMtiempo = data["tiempo"]
         if data.get("raciones") is not None:
@@ -440,6 +485,9 @@ class BowChatChefZeroWaste_E1_Agente(BowChatChefZeroWaste):
             self.STMmenuDias = data["dias_menu"]
         if data.get("restriccion") is not None:
             self.STMrestriccion = data["restriccion"]
+        #DEFENSA: Persistimos dias para recuperarlos en la STM.
+        if data.get("dias") is not None:
+            self.STMdiasCaducidad = data["dias"]
         if recipe is not None:
             self.STMreceta = recipe
 

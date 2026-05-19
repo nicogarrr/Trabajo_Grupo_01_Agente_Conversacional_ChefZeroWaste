@@ -21,6 +21,8 @@ class BowChatChefZeroWaste_E2_STM(BowChatChefZeroWaste_E1_Agente):
         self.STMreceta = None
         # Memoria especifica para planificar_menu(dias).
         self.STMmenuDias = None
+        # Memoria especifica para calcular_caducidad(ingrediente, dias).
+        self.STMdiasCaducidad = None
 
     def STMEntities(self, entities, catIndex, prevResult):
         """
@@ -42,6 +44,10 @@ class BowChatChefZeroWaste_E2_STM(BowChatChefZeroWaste_E1_Agente):
         planificar_menu(dias)
             Si faltan ingredientes, usa los ingredientes anteriores.
             Si faltan dias, usa los dias anteriores de menu.
+
+        calcular_caducidad(ingrediente, dias)
+            Si falta ingrediente, usa el ingrediente anterior.
+            Si faltan dias, usa los dias anteriores.
         """
         operation = self.categories[catIndex]
         data = entities if isinstance(entities, dict) else self._parse_entities(entities)
@@ -95,8 +101,9 @@ class BowChatChefZeroWaste_E2_STM(BowChatChefZeroWaste_E1_Agente):
                 data["stm_usada"].append("raciones anteriores")
 
         elif operation == "planificar_menu":
-            # Los dias del menu son distintos de las raciones de una receta.
+            # Los dias del menu son distintos de las raciones o dias de caducidad.
             data["raciones"] = None
+            data["dias"] = None
             if len(data["ingredientes"]) == 0 and len(self.STMingredientes) > 0:
                 # Si el usuario no da ingredientes, reutiliza los ya guardados.
                 data["ingredientes"] = list(self.STMingredientes)
@@ -107,6 +114,19 @@ class BowChatChefZeroWaste_E2_STM(BowChatChefZeroWaste_E1_Agente):
             if data["dias_menu"] is None and self.STMmenuDias is not None:
                 # Si dice "otro menu", recupera el ultimo numero de dias.
                 data["dias_menu"] = self.STMmenuDias
+                data["stm_usada"].append("dias anteriores")
+
+        elif operation == "calcular_caducidad":
+            # Los dias de caducidad no actualizan la memoria de menu.
+            data["dias_menu"] = None
+            if data["ingrediente"] is None:
+                data["ingrediente"] = self.STMingredientePrincipal
+                data["ingrediente_principal"] = self.STMingredientePrincipal
+                if data["ingrediente"] is not None:
+                    data["stm_usada"].append("ingrediente anterior")
+
+            if data["dias"] is None and self.STMdiasCaducidad is not None:
+                data["dias"] = self.STMdiasCaducidad
                 data["stm_usada"].append("dias anteriores")
 
         self._memorize(data)

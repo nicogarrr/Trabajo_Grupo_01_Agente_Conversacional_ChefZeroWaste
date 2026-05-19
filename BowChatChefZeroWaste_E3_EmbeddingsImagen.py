@@ -49,10 +49,12 @@ class BowChatChefZeroWaste_E3_EmbeddingsImagen(BowChatChefZeroWaste_E2_STM):
 
     def vectorFromStr(self, vectorStr):
         vector = super().vectorFromStr(vectorStr)
-        legacy_image_dims = len(self.categories) - 1
-        # Los ejemplos antiguos tienen 6 posiciones de imagen; la nueva accion anade una septima.
-        if legacy_image_dims > 0 and legacy_image_dims < len(vector) <= 50:
-            return vector[:legacy_image_dims] + [0.0] + vector[legacy_image_dims:]
+        # Ejemplos antiguos: 6 acciones visuales. Tras las dos nuevas, hay 8.
+        if len(self.categories) == 8 and 6 < len(vector) <= 50:
+            return vector[:6] + [0.0, 0.0] + vector[6:]
+        # Ejemplos con planificar_menu: 7 acciones visuales. Falta calcular_caducidad.
+        if len(self.categories) == 8 and 50 < len(vector) <= 61:
+            return vector[:7] + [0.0] + vector[7:]
         return vector
 
     def _image_embedding(self):
