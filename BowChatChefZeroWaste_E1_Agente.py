@@ -118,6 +118,60 @@ class BowChatChefZeroWaste_E1_Agente(BowChatChefZeroWaste):
         },
     }
 
+    # DEFENSA: Tabla de consejos usada por conservar_ingrediente(ingrediente).
+    conservation_tips = {
+        "tomate": [
+            "Guardalo a temperatura ambiente si aun no esta muy maduro.",
+            "Cuando este maduro, pasalo a la nevera y consumelo en pocos dias.",
+            "Evita bolsas cerradas para que no acumule humedad.",
+        ],
+        "queso": [
+            "Envuelvelo en papel de horno o un recipiente cerrado, no directamente en plastico.",
+            "Guardalo en la zona menos fria de la nevera.",
+            "Si aparece moho superficial en queso curado, corta bien la zona afectada.",
+        ],
+        "arroz": [
+            "Si esta seco, guardalo en un bote hermetico lejos de humedad y calor.",
+            "Si esta cocido, enfrialo rapido y metelo en la nevera en un recipiente cerrado.",
+            "Consume el arroz cocido en 1 o 2 dias y recalientalo bien.",
+        ],
+        "espinacas": [
+            "Guardalas en la nevera con papel absorbente para retirar humedad.",
+            "No las laves hasta el momento de usarlas.",
+            "Si empiezan a ponerse blandas, usalas en salteados, tortillas o cremas.",
+        ],
+        "pan": [
+            "Guardalo en bolsa de tela o panera si lo vas a consumir pronto.",
+            "Congelalo en rebanadas si no lo vas a terminar en 1 o 2 dias.",
+            "Si se queda duro, aprovechalo para tostadas, picatostes o pan rallado.",
+        ],
+        "lechuga": [
+            "Guardala limpia y seca en la nevera con papel absorbente.",
+            "Separa las hojas danadas para que no estropeen el resto.",
+            "Mantenla en un recipiente ventilado o bolsa ligeramente abierta.",
+        ],
+        "zanahoria": [
+            "Guardala en la nevera dentro de una bolsa perforada o recipiente cerrado.",
+            "Retira las hojas si las tiene, porque aceleran la perdida de humedad.",
+            "Si se ablanda, ponla un rato en agua fria antes de cocinarla.",
+        ],
+        "huevo": [
+            "Guardalo en la nevera y evita cambios bruscos de temperatura.",
+            "Mantenlo en su envase para protegerlo de olores.",
+            "Comprueba su frescura en agua antes de tirarlo si tienes dudas.",
+        ],
+        "pasta": [
+            "La pasta seca debe ir en un bote cerrado, lejos de humedad.",
+            "La pasta cocida se guarda en la nevera con un poco de aceite para que no se pegue.",
+            "Consume la pasta cocida en 2 o 3 dias.",
+        ],
+        "default": [
+            "Guardalo en un recipiente limpio y cerrado.",
+            "Separalo de alimentos en mal estado y revisa la humedad.",
+            "Si no lo vas a usar pronto, valora congelarlo o cocinarlo para alargar su vida.",
+        ],
+    }
+
     def initialization(self):
         print("Chef Zero Waste iniciado.")
         print('Escribe "instrucciones" para ver ejemplos o "salir" para terminar.')
@@ -140,13 +194,11 @@ class BowChatChefZeroWaste_E1_Agente(BowChatChefZeroWaste):
             return self._agent_sustituir_ingrediente(data)
         if operation == "ajustar_raciones":
             return self._agent_ajustar_raciones(data)
-        #DEFENSA: Se incorpora la nueva operacion al flujo del agente.
-        if operation == "calcular_caducidad":
-            return self._agent_calcular_caducidad(data)
         if operation == "lista_compra":
             return self._agent_lista_compra()
-        if operation == "planificar_menu":
-            return self._agent_planificar_menu(data)
+        # DEFENSA: Enrutado de la nueva operacion del Alumno 1.
+        if operation == "conservar_ingrediente":
+            return self._agent_conservar_ingrediente(data)
 
         print("Operacion no reconocida.")
         return {"operacion": operation, "resultado": None}
@@ -158,10 +210,9 @@ class BowChatChefZeroWaste_E1_Agente(BowChatChefZeroWaste):
         print("- recomendar_receta(ingrediente, tiempo, raciones): receta con tomate en 15 minutos para 2 raciones.")
         print("- sustituir_ingrediente(ingrediente, restriccion): sustituye queso sin lactosa.")
         print("- ajustar_raciones(raciones): ajusta a 4 raciones.")
-        #DEFENSA: Se documenta el nuevo operador para el usuario.
-        print("- calcular_caducidad(ingrediente, dias): queso 5 dias.")
         print("- lista_compra(): que tengo que comprar.")
-        print("- planificar_menu(dias): planifica menu para 3 dias.")
+        # DEFENSA: Ejemplo de uso mostrado en las instrucciones del agente.
+        print("- conservar_ingrediente(ingrediente): como conservo el tomate.")
         print("- imagen: anade una ruta .png/.jpg/.webp; el vector final es [embedding_imagen + BoW].")
         print("- salir: termina la conversacion.\n")
         return {"operacion": "instrucciones", "resultado": "instrucciones impresas"}
@@ -252,34 +303,6 @@ class BowChatChefZeroWaste_E1_Agente(BowChatChefZeroWaste):
         self._print_stm_notes(data)
         return {"operacion": "ajustar_raciones", "receta": adjusted}
 
-    #DEFENSA: Implementa la regla de caducidad segun dias y guarda STM.
-    def _agent_calcular_caducidad(self, data):
-        ingredient = data.get("ingrediente")
-        days = data.get("dias")
-        if ingredient is None:
-            print("Necesito saber que ingrediente quieres comprobar.")
-            return {"operacion": "calcular_caducidad", "resultado": None}
-        if days is None:
-            print("Necesito los dias que lleva guardado el ingrediente.")
-            return {"operacion": "calcular_caducidad", "resultado": None}
-
-        if days <= 2:
-            status = "aun puede conservarse"
-        elif days <= 5:
-            status = "usalo pronto"
-        else:
-            status = "mejor revisalo antes de usarlo"
-
-        self._memorize(data)
-        print("{}: {} ({} dias).".format(ingredient, status, days))
-        self._print_stm_notes(data)
-        return {
-            "operacion": "calcular_caducidad",
-            "ingrediente": ingredient,
-            "dias": days,
-            "resultado": status,
-        }
-
     def _agent_lista_compra(self):
         recipe = self._stm_value("STMreceta", None)
         if recipe is None:
@@ -293,30 +316,29 @@ class BowChatChefZeroWaste_E1_Agente(BowChatChefZeroWaste):
             print("Lista de compra: {}".format(", ".join(missing)))
         return {"operacion": "lista_compra", "faltan": missing}
 
-    def _agent_planificar_menu(self, data):
-        days = data.get("dias_menu")
-        if days is None:
-            print("Necesito saber para cuantos dias quieres planificar el menu.")
-            return {"operacion": "planificar_menu", "menu": []}
+    # DEFENSA: Implementacion de la operacion conservar_ingrediente(ingrediente).
+    def _agent_conservar_ingrediente(self, data):
+        ingredient = data.get("ingrediente_principal") or data.get("ingrediente")
+        if ingredient is None:
+            print("Necesito saber que ingrediente quieres conservar.")
+            return {"operacion": "conservar_ingrediente", "ingrediente": None, "consejos": []}
 
-        ingredients = data.get("ingredientes", [])
-        if len(ingredients) == 0:
-            print("No tengo ingredientes guardados para planificar el menu.")
-            return {"operacion": "planificar_menu", "dias": days, "menu": []}
-
-        # Usa ingredientes de la frase o los que haya recuperado la STM.
+        tips = self.conservation_tips.get(ingredient, self.conservation_tips["default"])
+        data["ingrediente"] = ingredient
+        data["ingrediente_principal"] = ingredient
+        data["ingredientes"] = self._unique(data.get("ingredientes", []) + [ingredient])
         self._memorize(data)
-        menu = []
-        for day in range(1, days + 1):
-            # Reparte los ingredientes disponibles entre los dias solicitados.
-            ingredient = ingredients[(day - 1) % len(ingredients)]
-            menu.append("Dia {}: plato de aprovechamiento con {}".format(day, ingredient))
 
-        print("Menu planificado para {} dias:".format(days))
-        for item in menu:
-            print("- {}".format(item))
+        print("\nConsejos para conservar {}:".format(ingredient))
+        for i, tip in enumerate(tips, start=1):
+            print("  {}. {}".format(i, tip))
         self._print_stm_notes(data)
-        return {"operacion": "planificar_menu", "dias": days, "menu": menu}
+        print()
+        return {
+            "operacion": "conservar_ingrediente",
+            "ingrediente": ingredient,
+            "consejos": tips,
+        }
 
     def _parse_entities(self, entities):
         raw = self._strip_accents(self._last_raw_sentence.lower())
@@ -346,10 +368,6 @@ class BowChatChefZeroWaste_E1_Agente(BowChatChefZeroWaste):
             "restriccion": restrictions[0] if len(restrictions) > 0 else None,
             "tiempo": self._extract_time(raw),
             "raciones": self._extract_servings(raw),
-            # Parametro propio de planificar_menu(dias).
-            "dias_menu": self._extract_menu_days(raw),
-            # Parametro propio de calcular_caducidad(ingrediente, dias).
-            "dias": self._extract_days(raw),
             "ruta_imagen": self._extract_image_path(self._last_raw_sentence),
             "stm_usada": [],
         }
@@ -416,27 +434,6 @@ class BowChatChefZeroWaste_E1_Agente(BowChatChefZeroWaste):
                 return int(match.group(1))
         return None
 
-    def _extract_menu_days(self, raw):
-        # "menu semanal" equivale a planificar 7 dias.
-        if "semanal" in raw:
-            return 7
-        patterns = [
-            r"(\d+)\s*(dia|dias)",
-            r"para\s+(\d+)\s*(dia|dias)",
-        ]
-        for pattern in patterns:
-            match = re.search(pattern, raw)
-            if match:
-                return int(match.group(1))
-        return None
-
-    def _extract_days(self, raw):
-        # Detecta patrones del tipo "X dias" para caducidad.
-        match = re.search(r"(\d+)\s*(dia|dias)", raw)
-        if match:
-            return int(match.group(1))
-        return None
-
     def _extract_image_path(self, sentence):
         patterns = [
             r'"([^"]+\.(?:jpg|jpeg|png|bmp|webp))"',
@@ -473,21 +470,12 @@ class BowChatChefZeroWaste_E1_Agente(BowChatChefZeroWaste):
         if len(ingredients) > 0:
             self.STMingredientes = self._unique(self.STMingredientes + ingredients)
             self.STMingredientePrincipal = data.get("ingrediente_principal") or ingredients[0]
-        #DEFENSA: Se guardan restricciones en la STM para su uso posterior.
-        if data.get("ingrediente") is not None:
-            self.STMingredientePrincipal = data["ingrediente"]
         if data.get("tiempo") is not None:
             self.STMtiempo = data["tiempo"]
         if data.get("raciones") is not None:
             self.STMraciones = data["raciones"]
-        if data.get("dias_menu") is not None and hasattr(self, "STMmenuDias"):
-            # Permite entender frases posteriores como "otro menu".
-            self.STMmenuDias = data["dias_menu"]
         if data.get("restriccion") is not None:
             self.STMrestriccion = data["restriccion"]
-        #DEFENSA: Persistimos dias para recuperarlos en la STM.
-        if data.get("dias") is not None:
-            self.STMdiasCaducidad = data["dias"]
         if recipe is not None:
             self.STMreceta = recipe
 

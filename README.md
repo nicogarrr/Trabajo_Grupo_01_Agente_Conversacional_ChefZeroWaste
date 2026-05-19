@@ -21,6 +21,21 @@ Proyecto adaptado al esquema de la practica `CA1_ConversationalAgent`.
 - `sustituir_ingrediente(ingrediente, restriccion)` - aridad 2.
 - `ajustar_raciones(raciones)` - aridad 1.
 - `lista_compra()` - aridad 0.
+<!-- DEFENSA: Operador anadido para el Alumno 1. -->
+- `conservar_ingrediente(ingrediente)` - aridad 1.
+
+<!-- DEFENSA: Explicacion preparada para entregar. -->
+## Operador Alumno 1: conservar ingrediente
+
+He creado la operacion `conservar_ingrediente(ingrediente)`, cuya finalidad es recomendar una forma de conservacion para un ingrediente concreto. Esta operacion ayuda al objetivo del agente Chef Zero Waste porque permite reducir desperdicio indicando como guardar mejor los alimentos.
+
+El parametro principal es `ingrediente`. Por ejemplo, si el usuario escribe `como conservo el tomate`, el sistema detecta la operacion `conservar_ingrediente` y extrae `tomate` como entidad.
+
+Reglas STM:
+
+- Si el usuario no indica ingrediente, se usa el ultimo ingrediente principal guardado en `STMingredientePrincipal`.
+- Si no hay ingrediente principal, se usa el primer ingrediente de la lista `STMingredientes`.
+- Cuando se ejecuta la operacion, el ingrediente consultado se guarda como `STMingredientePrincipal`.
 
 ## Ejecucion
 
@@ -41,6 +56,7 @@ pulsa `Enter`.
 
 ## Flujo completo de prueba
 
+<!-- DEFENSA: El flujo incluye prompts de prueba para conservar_ingrediente. -->
 ```text
 instrucciones
 tengo tomate y queso
@@ -49,6 +65,8 @@ receta en 15 minutos para 2 raciones
 sustituye queso sin lactosa
 ajusta a 4 raciones
 que tengo que comprar
+como conservo el tomate
+como lo conservo
 receta imagenes_acciones/recomendar_receta.png
 queso sin lactosa imagenes_acciones/sustituir_ingrediente.png
 4 raciones imagenes_acciones/ajustar_raciones.png
@@ -61,7 +79,7 @@ salir
 Imagen para `anadir_ingredientes`:
 
 ```text
-Embedding imagen -> [0.0, 5.0, 0.0, 0.0, 0.0, 0.0]
+Embedding imagen -> [0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 Categoria detectada: anadir_ingredientes
 ```
 
@@ -81,7 +99,7 @@ Multiplicar cantidades por 2.00
 Imagen para `recomendar_receta`:
 
 ```text
-Embedding imagen -> [0.0, 0.0, 5.0, 0.0, 0.0, 0.0]
+Embedding imagen -> [0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0]
 Categoria detectada: recomendar_receta
 ```
 

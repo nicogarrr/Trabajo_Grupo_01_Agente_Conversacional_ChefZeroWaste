@@ -20,6 +20,8 @@ class ImageActionEmbedder:
         "sustituir_ingrediente": "sustituir_ingrediente.png",
         "ajustar_raciones": "ajustar_raciones.png",
         "lista_compra": "lista_compra.png",
+        # DEFENSA: Entrada visual preparada para la nueva accion.
+        "conservar_ingrediente": "conservar_ingrediente.png",
     }
 
     def __init__(self, reference_dir=None):
