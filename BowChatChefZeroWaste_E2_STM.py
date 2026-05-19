@@ -19,8 +19,11 @@ class BowChatChefZeroWaste_E2_STM(BowChatChefZeroWaste_E1_Agente):
         self.STMraciones = None
         self.STMrestriccion = None
         self.STMreceta = None
+        #DEFENSA: STM dedicada a dias para la operacion de caducidad.
+        self.STMdiasCaducidad = None
 
     def STMEntities(self, entities, catIndex, prevResult):
+        #DEFENSA: Reglas STM para todos los operadores con parametros.
         """
         Reglas STM para todos los operadores con parametros.
 
@@ -36,6 +39,10 @@ class BowChatChefZeroWaste_E2_STM(BowChatChefZeroWaste_E1_Agente):
         ajustar_raciones(raciones)
             Si faltan raciones, usa las raciones anteriores.
             La receta previa tambien se recupera de STM.
+
+        calcular_caducidad(ingrediente, dias)
+            Si falta ingrediente, usa el ingrediente anterior.
+            Si faltan dias, usa los dias anteriores.
         """
         operation = self.categories[catIndex]
         data = entities if isinstance(entities, dict) else self._parse_entities(entities)
@@ -87,6 +94,19 @@ class BowChatChefZeroWaste_E2_STM(BowChatChefZeroWaste_E1_Agente):
             if data["raciones"] is None and self.STMraciones is not None:
                 data["raciones"] = self.STMraciones
                 data["stm_usada"].append("raciones anteriores")
+
+        elif operation == "calcular_caducidad":
+            #DEFENSA: Si falta ingrediente, se usa el ultimo de STM.
+            if data["ingrediente"] is None:
+                data["ingrediente"] = self.STMingredientePrincipal
+                data["ingrediente_principal"] = self.STMingredientePrincipal
+                if data["ingrediente"] is not None:
+                    data["stm_usada"].append("ingrediente anterior")
+
+            #DEFENSA: Si faltan dias, se recupera el ultimo valor guardado.
+            if data["dias"] is None and self.STMdiasCaducidad is not None:
+                data["dias"] = self.STMdiasCaducidad
+                data["stm_usada"].append("dias anteriores")
 
         self._memorize(data)
         return data

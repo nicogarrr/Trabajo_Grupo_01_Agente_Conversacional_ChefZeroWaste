@@ -14,6 +14,7 @@ from BoWChat import BoWChat
 
 
 class BowChatChefZeroWaste(BoWChat):
+    #DEFENSA: Se añade la nueva operación con dos parámetros.
     """
     Agente conversacional de cocina de aprovechamiento.
 
@@ -24,6 +25,7 @@ class BowChatChefZeroWaste(BoWChat):
         sustituir_ingrediente(ingrediente, restriccion)  -> aridad 2
         ajustar_raciones(raciones)                  -> aridad 1
         lista_compra()                              -> aridad 0
+        calcular_caducidad(ingrediente, dias)       -> aridad 2
     """
 
     ingredientes = {
@@ -79,6 +81,8 @@ class BowChatChefZeroWaste(BoWChat):
             "sustituir_ingrediente",
             "ajustar_raciones",
             "lista_compra",
+            #DEFENSA: Se mantiene el indice de categorias y se agrega al final.
+            "calcular_caducidad",
         ]
         BoWChat.__init__(self, categories, fileVectors, fileVoc)
         self._last_raw_sentence = ""
