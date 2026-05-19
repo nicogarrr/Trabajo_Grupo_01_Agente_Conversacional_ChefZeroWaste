@@ -142,6 +142,8 @@ class BowChatChefZeroWaste_E1_Agente(BowChatChefZeroWaste):
             return self._agent_ajustar_raciones(data)
         if operation == "lista_compra":
             return self._agent_lista_compra()
+        if operation == "planificar_menu":
+            return self._agent_planificar_menu(data)
 
         print("Operacion no reconocida.")
         return {"operacion": operation, "resultado": None}
@@ -154,6 +156,7 @@ class BowChatChefZeroWaste_E1_Agente(BowChatChefZeroWaste):
         print("- sustituir_ingrediente(ingrediente, restriccion): sustituye queso sin lactosa.")
         print("- ajustar_raciones(raciones): ajusta a 4 raciones.")
         print("- lista_compra(): que tengo que comprar.")
+        print("- planificar_menu(dias): planifica menu para 3 dias.")
         print("- imagen: anade una ruta .png/.jpg/.webp; el vector final es [embedding_imagen + BoW].")
         print("- salir: termina la conversacion.\n")
         return {"operacion": "instrucciones", "resultado": "instrucciones impresas"}
@@ -257,6 +260,31 @@ class BowChatChefZeroWaste_E1_Agente(BowChatChefZeroWaste):
             print("Lista de compra: {}".format(", ".join(missing)))
         return {"operacion": "lista_compra", "faltan": missing}
 
+    def _agent_planificar_menu(self, data):
+        days = data.get("dias_menu")
+        if days is None:
+            print("Necesito saber para cuantos dias quieres planificar el menu.")
+            return {"operacion": "planificar_menu", "menu": []}
+
+        ingredients = data.get("ingredientes", [])
+        if len(ingredients) == 0:
+            print("No tengo ingredientes guardados para planificar el menu.")
+            return {"operacion": "planificar_menu", "dias": days, "menu": []}
+
+        # Usa ingredientes de la frase o los que haya recuperado la STM.
+        self._memorize(data)
+        menu = []
+        for day in range(1, days + 1):
+            # Reparte los ingredientes disponibles entre los dias solicitados.
+            ingredient = ingredients[(day - 1) % len(ingredients)]
+            menu.append("Dia {}: plato de aprovechamiento con {}".format(day, ingredient))
+
+        print("Menu planificado para {} dias:".format(days))
+        for item in menu:
+            print("- {}".format(item))
+        self._print_stm_notes(data)
+        return {"operacion": "planificar_menu", "dias": days, "menu": menu}
+
     def _parse_entities(self, entities):
         raw = self._strip_accents(self._last_raw_sentence.lower())
         raw = raw.replace("sin gluten", "sin_gluten")
@@ -285,6 +313,8 @@ class BowChatChefZeroWaste_E1_Agente(BowChatChefZeroWaste):
             "restriccion": restrictions[0] if len(restrictions) > 0 else None,
             "tiempo": self._extract_time(raw),
             "raciones": self._extract_servings(raw),
+            # Parametro propio de planificar_menu(dias).
+            "dias_menu": self._extract_menu_days(raw),
             "ruta_imagen": self._extract_image_path(self._last_raw_sentence),
             "stm_usada": [],
         }
@@ -351,6 +381,20 @@ class BowChatChefZeroWaste_E1_Agente(BowChatChefZeroWaste):
                 return int(match.group(1))
         return None
 
+    def _extract_menu_days(self, raw):
+        # "menu semanal" equivale a planificar 7 dias.
+        if "semanal" in raw:
+            return 7
+        patterns = [
+            r"(\d+)\s*(dia|dias)",
+            r"para\s+(\d+)\s*(dia|dias)",
+        ]
+        for pattern in patterns:
+            match = re.search(pattern, raw)
+            if match:
+                return int(match.group(1))
+        return None
+
     def _extract_image_path(self, sentence):
         patterns = [
             r'"([^"]+\.(?:jpg|jpeg|png|bmp|webp))"',
@@ -391,6 +435,9 @@ class BowChatChefZeroWaste_E1_Agente(BowChatChefZeroWaste):
             self.STMtiempo = data["tiempo"]
         if data.get("raciones") is not None:
             self.STMraciones = data["raciones"]
+        if data.get("dias_menu") is not None and hasattr(self, "STMmenuDias"):
+            # Permite entender frases posteriores como "otro menu".
+            self.STMmenuDias = data["dias_menu"]
         if data.get("restriccion") is not None:
             self.STMrestriccion = data["restriccion"]
         if recipe is not None:

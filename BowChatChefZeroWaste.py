@@ -24,6 +24,7 @@ class BowChatChefZeroWaste(BoWChat):
         sustituir_ingrediente(ingrediente, restriccion)  -> aridad 2
         ajustar_raciones(raciones)                  -> aridad 1
         lista_compra()                              -> aridad 0
+        planificar_menu(dias)                       -> aridad 1
     """
 
     ingredientes = {
@@ -79,6 +80,8 @@ class BowChatChefZeroWaste(BoWChat):
             "sustituir_ingrediente",
             "ajustar_raciones",
             "lista_compra",
+            # Nueva operacion individual: planificacion de menu por dias.
+            "planificar_menu",
         ]
         BoWChat.__init__(self, categories, fileVectors, fileVoc)
         self._last_raw_sentence = ""

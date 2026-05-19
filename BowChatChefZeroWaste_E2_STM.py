@@ -19,6 +19,8 @@ class BowChatChefZeroWaste_E2_STM(BowChatChefZeroWaste_E1_Agente):
         self.STMraciones = None
         self.STMrestriccion = None
         self.STMreceta = None
+        # Memoria especifica para planificar_menu(dias).
+        self.STMmenuDias = None
 
     def STMEntities(self, entities, catIndex, prevResult):
         """
@@ -36,6 +38,10 @@ class BowChatChefZeroWaste_E2_STM(BowChatChefZeroWaste_E1_Agente):
         ajustar_raciones(raciones)
             Si faltan raciones, usa las raciones anteriores.
             La receta previa tambien se recupera de STM.
+
+        planificar_menu(dias)
+            Si faltan ingredientes, usa los ingredientes anteriores.
+            Si faltan dias, usa los dias anteriores de menu.
         """
         operation = self.categories[catIndex]
         data = entities if isinstance(entities, dict) else self._parse_entities(entities)
@@ -87,6 +93,21 @@ class BowChatChefZeroWaste_E2_STM(BowChatChefZeroWaste_E1_Agente):
             if data["raciones"] is None and self.STMraciones is not None:
                 data["raciones"] = self.STMraciones
                 data["stm_usada"].append("raciones anteriores")
+
+        elif operation == "planificar_menu":
+            # Los dias del menu son distintos de las raciones de una receta.
+            data["raciones"] = None
+            if len(data["ingredientes"]) == 0 and len(self.STMingredientes) > 0:
+                # Si el usuario no da ingredientes, reutiliza los ya guardados.
+                data["ingredientes"] = list(self.STMingredientes)
+                data["ingrediente"] = data["ingredientes"][0]
+                data["ingrediente_principal"] = data["ingredientes"][0]
+                data["stm_usada"].append("ingredientes anteriores")
+
+            if data["dias_menu"] is None and self.STMmenuDias is not None:
+                # Si dice "otro menu", recupera el ultimo numero de dias.
+                data["dias_menu"] = self.STMmenuDias
+                data["stm_usada"].append("dias anteriores")
 
         self._memorize(data)
         return data

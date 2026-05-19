@@ -47,6 +47,14 @@ class BowChatChefZeroWaste_E3_EmbeddingsImagen(BowChatChefZeroWaste_E2_STM):
 
         return vector, entities
 
+    def vectorFromStr(self, vectorStr):
+        vector = super().vectorFromStr(vectorStr)
+        legacy_image_dims = len(self.categories) - 1
+        # Los ejemplos antiguos tienen 6 posiciones de imagen; la nueva accion anade una septima.
+        if legacy_image_dims > 0 and legacy_image_dims < len(vector) <= 50:
+            return vector[:legacy_image_dims] + [0.0] + vector[legacy_image_dims:]
+        return vector
+
     def _image_embedding(self):
         image_path = self._extract_image_path(self._last_raw_sentence)
         if image_path is None:
