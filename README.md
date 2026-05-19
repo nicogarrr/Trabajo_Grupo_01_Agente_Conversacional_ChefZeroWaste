@@ -21,7 +21,8 @@ Proyecto adaptado al esquema de la practica `CA1_ConversationalAgent`.
 - `sustituir_ingrediente(ingrediente, restriccion)` - aridad 2.
 - `ajustar_raciones(raciones)` - aridad 1.
 - `lista_compra()` - aridad 0.
-<!-- DEFENSA: Operador anadido para el Alumno 1. -->
+- `planificar_menu(dias)` - aridad 1.
+- `calcular_caducidad(ingrediente, dias)` - aridad 2.
 - `conservar_ingrediente(ingrediente)` - aridad 1.
 
 <!-- DEFENSA: Explicacion preparada para entregar. -->
@@ -62,6 +63,10 @@ instrucciones
 tengo tomate y queso
 tengo arroz imagenes_acciones/anadir_ingredientes.png
 receta en 15 minutos para 2 raciones
+planifica menu para 3 dias
+otro menu
+queso 5 dias
+lleva dias
 sustituye queso sin lactosa
 ajusta a 4 raciones
 que tengo que comprar
@@ -79,7 +84,7 @@ salir
 Imagen para `anadir_ingredientes`:
 
 ```text
-Embedding imagen -> [0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+Embedding imagen -> [0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 Categoria detectada: anadir_ingredientes
 ```
 
@@ -99,7 +104,7 @@ Multiplicar cantidades por 2.00
 Imagen para `recomendar_receta`:
 
 ```text
-Embedding imagen -> [0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0]
+Embedding imagen -> [0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 Categoria detectada: recomendar_receta
 ```
 

@@ -49,12 +49,12 @@ class BowChatChefZeroWaste_E3_EmbeddingsImagen(BowChatChefZeroWaste_E2_STM):
 
     def vectorFromStr(self, vectorStr):
         vector = super().vectorFromStr(vectorStr)
-        # Ejemplos antiguos: 6 acciones visuales. Tras las dos nuevas, hay 8.
-        if len(self.categories) == 8 and 6 < len(vector) <= 50:
-            return vector[:6] + [0.0, 0.0] + vector[6:]
-        # Ejemplos con planificar_menu: 7 acciones visuales. Falta calcular_caducidad.
-        if len(self.categories) == 8 and 50 < len(vector) <= 61:
-            return vector[:7] + [0.0] + vector[7:]
+        # Ejemplos antiguos: 6 acciones visuales. Tras las tres nuevas, hay 9.
+        if len(self.categories) == 9 and 6 < len(vector) <= 50:
+            return vector[:6] + [0.0, 0.0, 0.0] + vector[6:]
+        # Ejemplos con planificar_menu y caducidad: 8 acciones visuales. Falta conservacion.
+        if len(self.categories) == 9 and 50 < len(vector) <= 65:
+            return vector[:8] + [0.0] + vector[8:]
         return vector
 
     def _image_embedding(self):

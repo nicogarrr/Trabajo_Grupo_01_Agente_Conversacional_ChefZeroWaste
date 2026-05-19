@@ -24,7 +24,8 @@ class BowChatChefZeroWaste(BoWChat):
         sustituir_ingrediente(ingrediente, restriccion)  -> aridad 2
         ajustar_raciones(raciones)                  -> aridad 1
         lista_compra()                              -> aridad 0
-        DEFENSA: Operador anadido para el Alumno 1.
+        planificar_menu(dias)                       -> aridad 1
+        calcular_caducidad(ingrediente, dias)       -> aridad 2
         conservar_ingrediente(ingrediente)           -> aridad 1
     """
 
@@ -81,7 +82,11 @@ class BowChatChefZeroWaste(BoWChat):
             "sustituir_ingrediente",
             "ajustar_raciones",
             "lista_compra",
-            # DEFENSA: Categoria nueva para detectar consejos de conservacion.
+            # Nueva operacion individual: planificacion de menu por dias.
+            "planificar_menu",
+            # Nueva operacion individual: caducidad de un ingrediente por dias.
+            "calcular_caducidad",
+            # Nueva operacion individual: consejos de conservacion.
             "conservar_ingrediente",
         ]
         BoWChat.__init__(self, categories, fileVectors, fileVoc)
